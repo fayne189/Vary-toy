@@ -1,12 +1,10 @@
 from typing import List, Optional, Tuple, Union
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
 from transformers import AutoConfig, AutoModelForCausalLM, \
                          CLIPVisionModel, CLIPImageProcessor
 from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast
-from vary.utils.constants import *
 from vary.model.plug.blip_process import BlipImageEvalProcessor
 from vary.model.llm.qwen.modeling_qwen import QWenLMHeadModel, QWenModel
 from vary.model.llm.qwen.configuration_qwen import QWenConfig
@@ -23,7 +21,7 @@ class varyQwenModel(QWenModel):
     def __init__(self, config: QWenConfig):
         super(varyQwenModel, self).__init__(config)
 
-        self.vision_tower = CLIPVisionModel.from_pretrained('/data/hypertext/ucaswei/cache/vit-large-patch14/vit-large-patch14/')
+        self.vision_tower = CLIPVisionModel.from_pretrained('openai/clip-vit-large-patch14')
         self.vision_tower_high = build_sam_vit_b()
 
         self.mm_projector =  nn.Linear(1024, 1024)
@@ -41,7 +39,7 @@ class varyQwenModel(QWenModel):
     ):
 
         # 224*224
-        image_processor = CLIPImageProcessor.from_pretrained('/data/hypertext/ucaswei/cache/vit-large-patch14/vit-large-patch14/') 
+        image_processor = CLIPImageProcessor.from_pretrained('openai/clip-vit-large-patch14') 
         # 1024*1024
         image_processor_high = BlipImageEvalProcessor(image_size=1024)
       
@@ -71,9 +69,9 @@ class varyQwenModel(QWenModel):
 
     def forward(
         self,
-        input_ids: torch.LongTensor = None,
-        attention_mask: Optional[torch.Tensor] = None,
-        past_key_values: Optional[List[torch.FloatTensor]] = None,
+        input_ids: Optional[torch.LongTensor] = None,
+        attention_mask: Optional[torch.FloatTensor] = None,
+        past_key_values: Optional[Tuple[Tuple[torch.Tensor]]] = None,
         inputs_embeds: Optional[torch.FloatTensor] = None,
         use_cache: Optional[bool] = None,
         output_attentions: Optional[bool] = None,
